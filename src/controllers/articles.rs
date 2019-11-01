@@ -1,12 +1,11 @@
-use crate::fairings::entity_manager::EntityManager;
+use crate::services::entity_manager::EntityManager;
 use crate::forms::medium_post::CreateMediumPostForm;
 use crate::models::medium_post::MediumPost;
-use rocket::Route;
+use rocket::{Route, State};
 use rocket_contrib::json::Json;
 
 #[get("/")]
-pub fn index() -> Json<Vec<MediumPost>> {
-    let entity_manager = EntityManager::<MediumPost>::new(String::from("test-legba-2"));
+pub fn index(entity_manager: State<EntityManager::<MediumPost>>) -> Json<Vec<MediumPost>> {
     return Json(entity_manager.get_all().unwrap_or_default());
 }
 
@@ -19,9 +18,7 @@ pub enum CreateArticleResponder {
 }
 
 #[post("/", data = "<body>")]
-pub fn create_article(body: Json<CreateMediumPostForm>) -> CreateArticleResponder {
-    let entity_manager = EntityManager::<MediumPost>::new(String::from("test-legba-2"));
-
+pub fn create_article(body: Json<CreateMediumPostForm>, entity_manager: State<EntityManager::<MediumPost>>) -> CreateArticleResponder {
     let medium_post = MediumPost {
         title: body.title.clone(),
         url: body.url.clone(),
@@ -32,7 +29,7 @@ pub fn create_article(body: Json<CreateMediumPostForm>) -> CreateArticleResponde
         Ok(_result) => return CreateArticleResponder::Ok(Json(medium_post)),
         _ => {
             return CreateArticleResponder::DBError(String::from(
-                "An error occured duricaprineng db insertion",
+                "An error occured during db insertion",
             ))
         }
     };

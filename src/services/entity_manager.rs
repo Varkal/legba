@@ -66,3 +66,4 @@ impl<T: DynamoMapper> EntityManager<T> {
         return None;
     }
 }
+
