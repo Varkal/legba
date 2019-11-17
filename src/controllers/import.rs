@@ -1,6 +1,6 @@
 use reqwest;
-use scraper;
 use rocket::Route;
+use scraper;
 use std::env;
 
 #[post("/import")]
@@ -17,15 +17,14 @@ pub fn import() -> String {
     let article_selector = scraper::Selector::parse(".streamItem").unwrap();
     let title_selector = scraper::Selector::parse("h3").unwrap();
 
-    let mut articles_title = Vec::<String>::new();
-
-    for article_element in document.select(&article_selector) {
-        for title_element in article_element.select(&title_selector) {
-            articles_title.push(title_element.text().collect())
-        }
-    }
-
-    return articles_title.join("\n");
+    return document
+        .select(&article_selector)
+        .flat_map(|article_element| {
+            article_element
+                .select(&title_selector)
+                .map(|title_element| title_element.text().collect::<String>())
+        })
+        .collect::<Vec<String>>().join("\n");
 }
 
 pub fn routes() -> Vec<Route> {
